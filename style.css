@@ -78,8 +78,51 @@
   border: 1px solid #000;
 }
 
+.options .easy {
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  padding: 5px;
+  background-color: #fff;
+  color: #000;
+  font-size: 1.5em;
+  border-radius: 5px;
+  margin-left: 10px;
+  width: 200px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid #000;
+}
+.options .medium {
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  padding: 5px;
+  background-color: #fff;
+  color: #000;
+  font-size: 1.5em;
+  border-radius: 5px;
+  margin-left: 10px;
+  width: 200px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid #000;
+}
+.options .hard {
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  padding: 5px;
+  background-color: #fff;
+  color: #000;
+  font-size: 1.5em;
+  border-radius: 5px;
+  margin-left: 10px;
+  width: 200px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid #000;
+}
+
 .options .friend:hover,
 .computer:hover,
+.easy:hover,
+.medium:hover,
+.hard:hover,
 .x:hover,
 .o:hover {
   background-color: #011627;

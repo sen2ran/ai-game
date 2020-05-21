@@ -1,237 +1,256 @@
-function init(player, OPPONENT) {
-  // SELECT CANAVS
+function init(player, OPPONENT, LEVEL) {
+  // select canvas
   const canvas = document.getElementById("cvs");
   const ctx = canvas.getContext("2d");
-
-  // BOARD VARIABLES
+  // initialize values
   let board = [];
+  let LOADING_STATE = false;
   const COLUMN = 7;
   const ROW = 7;
   const SPACE_SIZE = 100;
 
-  // STORE PLAYER'S MOVES
-  let gameData = new Array(49);
-
-  // By default the first player to play is the human
-  let currentPlayer = player.man;
-
-  // load X & O images
   const xImage = new Image();
   xImage.src = "img/X1.png";
 
   const oImage = new Image();
   oImage.src = "img/O1.png";
 
+  // By default the first player to play is the human
+  let currentPlayer = player.man;
+
   //Match Combo
   const MATCH_COMBO = [
-    [0, 7, 14, 21, 28, 35, 42],
-    [1, 8, 15, 22, 29, 36, 43],
-    [2, 9, 16, 23, 30, 37, 44],
-    [3, 10, 17, 24, 31, 38, 45],
-    [4, 11, 18, 25, 32, 39, 46],
-    [5, 12, 19, 26, 33, 40, 47],
-    [6, 13, 20, 27, 34, 41, 48],
+    [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [4, 0],
+      [5, 0],
+      [6, 0],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+      [3, 1],
+      [4, 1],
+      [5, 1],
+      [6, 1],
+    ],
+    [
+      [0, 2],
+      [1, 2],
+      [2, 2],
+      [3, 2],
+      [4, 2],
+      [5, 2],
+      [6, 2],
+    ],
+    [
+      [0, 3],
+      [1, 3],
+      [2, 3],
+      [3, 3],
+      [4, 3],
+      [5, 3],
+      [6, 3],
+    ],
+    [
+      [0, 4],
+      [1, 4],
+      [2, 4],
+      [3, 4],
+      [4, 4],
+      [5, 4],
+      [6, 4],
+    ],
+    [
+      [0, 5],
+      [1, 5],
+      [2, 5],
+      [3, 5],
+      [4, 5],
+      [5, 5],
+      [6, 5],
+    ],
+    [
+      [0, 6],
+      [1, 6],
+      [2, 6],
+      [3, 6],
+      [4, 6],
+      [5, 6],
+      [6, 6],
+    ],
   ];
 
-  // DRAW THE BOARD
   function drawBoard() {
-    // WE give every space a unique id
-    // So we know exactly where to put the player's move on the gameData Array
-    let id = 0;
     for (let i = 0; i < ROW; i++) {
       board[i] = [];
       for (let j = 0; j < COLUMN; j++) {
-        board[i][j] = {
-          id: id,
-          val: null,
-        };
-        id++;
-
-        // draw the spaces
+        board[i][j] = null;
         ctx.strokeStyle = "#000";
-        ctx.setLineDash([5, 3]);
-        ctx.strokeRect(j * SPACE_SIZE, i * SPACE_SIZE, SPACE_SIZE, SPACE_SIZE);
+        // ctx.setLineDash([5, 3]);
+        ctx.font = "15px Arial";
+        ctx.strokeRect(i * SPACE_SIZE, j * SPACE_SIZE, SPACE_SIZE, SPACE_SIZE);
+        ctx.fillText(`[${i}, ${j}]`, i * SPACE_SIZE, j * SPACE_SIZE + 20);
       }
     }
-    // console.log(board);
   }
   drawBoard();
 
-  // ON PLAYER'S CLICK
+  //click event
   canvas.addEventListener("click", function (event) {
+    if (LOADING_STATE) return;
     // X & Y position of mouse click relative to the canvas
     let X = event.clientX - canvas.getBoundingClientRect().x;
-    //CALCULATE i & j of the clicked SPACE
     let i = Math.floor(X / SPACE_SIZE);
-    let getPosition = getId(i);
-    // Prevent the player to play the same space twice
-    if (gameData[getPosition.id]) return;
-    // store the player's move to gameData and board
-    if (getPosition.id != undefined) {
-      gameData[getPosition.id] = currentPlayer;
-      board[i][getPosition.position].val = currentPlayer;
-      // draw the move on board
-      drawOnBoard(currentPlayer, i, getPosition.position);
-    }
+
+    let positions = getPosition(i, board);
+    //check if value exist
+    if (!positions) return;
+    // prevent the player to play the same space twice
+    if (board[positions[0]][positions[1]]) return;
+    board[positions[0]][positions[1]] = currentPlayer;
+    // draw the move on board
+    drawOnBoard(currentPlayer, positions[0], positions[1]);
+
     // Check if the play wins
     if (isWinner(board, currentPlayer)) {
       showGameOver(currentPlayer);
       return;
     }
-
     // check if it's a tie game
-    if (isTie(gameData)) {
+    if (isTie(board)) {
       showGameOver("tie");
       return;
     }
-
+    //check if the play tie
+    //give next turn
     if (OPPONENT == "computer") {
-      // Get the id of the space using minimax algoritham
-      let id = minimax(gameData, board, player.computer).id;
-      console.log(id);
-
-      //get i and j of space
-      let space = getIJ(id);
-      // draw the move on board
-      // store the player's move to gameData and board
-      if (getPosition.id != undefined) {
-        gameData[id] = currentPlayer;
-        board[space.i][space.j].val = currentPlayer;
-        // draw the move on board
-        drawOnBoard(player.computer, space.i, space.j);
-      }
-
-      // Check if the play wins
-      if (isWinner(board, currentPlayer)) {
-        showGameOver(currentPlayer);
-        return;
-      }
-      // check if it's a tie game
-      if (isTie(gameData)) {
-        showGameOver("tie");
-        return;
-      }
+      //For AI
+      LOADING_STATE = true;
+      generateComputerDecision();
     } else {
-      // GIVE TURN TO THE OTHER PLAYER
+      //for User
       currentPlayer = currentPlayer == player.man ? player.friend : player.man;
     }
   });
 
-  //MINIMAX
-  function minimax(gameData, board, PLAYER) {
-    // console.log(board);
+  function generateComputerDecision() {
+    setTimeout(() => {
+      LOADING_STATE = false;
+      let startTime = new Date().getTime();
+      //minimax algorithm
+      let aiMove = maximizePlay(board, LEVEL);
+      let positions = getPosition(aiMove[0], board);
+      // // prevent the player to play the same space twice
+      if (board[positions[0]][positions[1]]) return;
+      board[positions[0]][positions[1]] = player.computer;
+      // // draw the move on board
+      drawOnBoard(player.computer, positions[0], positions[1]);
+      // Check if the play wins
+      if (isWinner(board, player.computer)) {
+        showGameOver(player.computer);
+        return;
+      }
+      // check if it's a tie game
+      if (isTie(board)) {
+        showGameOver("tie");
+        return;
+      }
+      let endTime = new Date().getTime() - startTime;
+      console.log("generateComputerDecision", endTime);
+    }, 500);
+  }
+
+  //ai part
+  function maximizePlay(board, level) {
     // BASE
-    if (isWinner(board, player.computer)) return { evaluation: +10 };
-    if (isWinner(board, player.man)) return { evaluation: -10 };
-    if (isTie(gameData)) return { evaluation: 0 };
-    //LOOK for EMPTY SPACES
-    let EMPTY_SPACES = emptySpaces(board);
-    //SAVE ALL MOVES AND THEIR EVALUATIONS
-    let moves = [];
-    // console.log(EMPTY_SPACES);
-    // console.log(PLAYER);
-    // LOOP OVER TH E EMPITY SPACES
-    for (let i = 0; i < EMPTY_SPACES.length; i++) {
-      console.log(EMPTY_SPACES.length);
-      //GET ID OF EMPTY SPACE
-      let id = EMPTY_SPACES[i].id;
-      // console.log(id);
-      let space = getIJ(id);
-      // console.log(space);
-      //BACK UP THE SPACE
-      let backup = gameData[id];
-      let backup2 = board[space.i][space.j].val;
-      //MAKE THE MOVE FOR THE PLAYER
-      gameData[id] = PLAYER;
-      board[space.i][space.j].val = PLAYER;
-      //SAVE THE MOVES'S ID AND EVALUATION
-      let move = {};
-      move.id = id;
-      // console.log(move);
-      // console.log(backup);
-      // console.log(backup2);
+    if (isWinner(board, player.computer)) return [null, 10];
+    if (isWinner(board, player.man)) return [null, -10];
+    if (isTie(board)) return [null, 0];
+    // recursive break
+    if (level == 0) return [null, 0];
+    // Column, Score
+    var max = [null, -99999];
 
-      //THE MOVE EVALUATION
-      if (PLAYER == player.computer) {
-        console.log("SS", board);
-        move.evaluation = minimax(gameData, board, player.man).evaluation;
-        // console.log(move);
-      } else {
-        move.evaluation = minimax(gameData, board, player.computer).evaluation;
-        console.log(move);
-      }
-      // console.log(move.evaluation);
-      //RESTORE SPACE
-      gameData[id] = backup;
-      board[space.i][space.j].val = backup2;
-      // //SAVE MOVED TO MOVES ARRAY
-      moves.push(move);
-    }
-    console.log(moves);
-    //MINIMAX ALGIRITHM
-    // let bestMove;
-    // if (PLAYER == player.computer) {
-    //   let bestEvaluation = -Infinity;
-    //   for (let i = 0; i < moves.length; i++) {
-    //     if (moves[i].evaluation > bestEvaluation) {
-    //       bestEvaluation = moves[i].evaluation;
-    //       bestMove = moves[i];
-    //     }
-    //   }
-    // } else {
-    //   let bestEvaluation = +Infinity;
-    //   for (let i = 0; i < moves.length; i++) {
-    //     if (moves[i].evaluation < bestEvaluation) {
-    //       bestEvaluation = moves[i].evaluation;
-    //       bestMove = moves[i];
-    //     }
-    //   }
-    // }
-    // // console.log(bestMove);
-    // return bestMove;
-  }
-  // draw on board
-  function drawOnBoard(player, i, j) {
-    let img = player == "X" ? xImage : oImage;
-    // the x,y positon of the image are the x,y of the clicked space
-    ctx.drawImage(img, i * SPACE_SIZE, j * SPACE_SIZE);
-  }
-  function emptySpaces(board) {
-    let EMPTY = [];
-    for (let i = 0; i < board.length; i++) {
-      let selectableArray = board[i].filter((x) => !x.val);
-      if (selectableArray.length > 0) {
-        EMPTY.push(selectableArray[selectableArray.length - 1]);
-      }
-    }
-    return EMPTY.filter((x) => !x.val);
-  }
-  function getId(val) {
-    let selectedArray = MATCH_COMBO[val];
-    let selectableArray = [];
-    for (let i = 0; i < selectedArray.length; i++) {
-      if (!gameData[selectedArray[i]]) {
-        selectableArray.push(selectedArray[i]);
-      }
-    }
-    return {
-      id: selectableArray[selectableArray.length - 1],
-      position: selectableArray.length - 1,
-    };
-  }
+    for (let i = 0; i < 7; i++) {
+      //copy board
+      let newBoard = JSON.parse(JSON.stringify(board));
+      // place value
+      let positions = getPosition(i, newBoard);
+      if (positions) {
+        newBoard[positions[0]][positions[1]] = player.computer;
+        let nextMove = minimizePlay(newBoard, level - 1);
 
-  //Get I and J
-  function getIJ(id) {
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board[i].length; j++) {
-        if (board[i][j].id == id) {
-          return {
-            i: i,
-            j: j,
-          };
+        // Evaluate new move
+        if (max[0] == null || nextMove[1] > max[1]) {
+          max[0] = i;
+          max[1] = nextMove[1];
         }
       }
     }
+
+    return max;
+  }
+  //user part
+  function minimizePlay(board, level) {
+    // BASE
+    if (isWinner(board, player.computer)) return [null, 10];
+    if (isWinner(board, player.man)) return [null, -10];
+    if (isTie(board)) return [null, 0];
+    // recursive break
+    if (level == 0) return [null, 0];
+    // Column, score
+    var min = [null, 99999];
+
+    for (let i = 0; i < 7; i++) {
+      let newBoard = JSON.parse(JSON.stringify(board));
+      let positions = getPosition(i, newBoard);
+      if (positions) {
+        newBoard[positions[0]][positions[1]] = player.man;
+        let nextMove = minimizePlay(newBoard, level - 1);
+        if (min[0] == null || nextMove[1] < min[1]) {
+          min[0] = i;
+          min[1] = nextMove[1];
+        }
+      }
+    }
+    return min;
+  }
+
+  // function setPosition(newBoard, row) {
+  //   let selectedArray = newBoard[row];
+  //   console.log(selectedArray);
+  //   console.log(row);
+
+  //   for (let i = 7 - 1; i >= 0; i--) {
+  //     if (selectedArray[i] == null) {
+  //       newBoard[row][i] = currentPlayer; // Set current user
+  //       break;
+  //     }
+  //     currentPlayer == player.man ? player.computer : player.man;
+  //     console.log(currentPlayer);
+  //     return true;
+  //   }
+  // }
+
+  // draw on board
+  function drawOnBoard(player, i, j) {
+    let img = player == "X" ? xImage : oImage;
+    ctx.drawImage(img, i * SPACE_SIZE, j * SPACE_SIZE);
+  }
+
+  function getPosition(row, board) {
+    let selectedArray = board[row];
+    for (let i = 7 - 1; i >= 0; i--) {
+      if (selectedArray[i] == null) {
+        return [row, i];
+      }
+    }
+    return false;
   }
 
   function isWinner(board, player) {
@@ -239,10 +258,10 @@ function init(player, OPPONENT) {
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 7; j++) {
         if (
-          board[j][i].val == player &&
-          board[j][i + 1].val == player &&
-          board[j][i + 2].val == player &&
-          board[j][i + 3].val == player
+          board[j][i] == player &&
+          board[j][i + 1] == player &&
+          board[j][i + 2] == player &&
+          board[j][i + 3] == player
         ) {
           return true;
         }
@@ -251,10 +270,10 @@ function init(player, OPPONENT) {
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 7; j++) {
         if (
-          board[i][j].val == player &&
-          board[i + 1][j].val == player &&
-          board[i + 2][j].val == player &&
-          board[i + 3][j].val == player
+          board[i][j] == player &&
+          board[i + 1][j] == player &&
+          board[i + 2][j] == player &&
+          board[i + 3][j] == player
         ) {
           return true;
         }
@@ -264,10 +283,10 @@ function init(player, OPPONENT) {
     for (let i = 3; i < 7; i++) {
       for (let j = 0; j < 4; j++) {
         if (
-          board[i][j].val == player &&
-          board[i - 1][j + 1].val == player &&
-          board[i - 2][j + 2].val == player &&
-          board[i - 3][j + 3].val == player
+          board[i][j] == player &&
+          board[i - 1][j + 1] == player &&
+          board[i - 2][j + 2] == player &&
+          board[i - 3][j + 3] == player
         ) {
           return true;
         }
@@ -276,10 +295,10 @@ function init(player, OPPONENT) {
     for (let i = 3; i < 7; i++) {
       for (let j = 3; j < 7; j++) {
         if (
-          board[i][j].val == player &&
-          board[i - 1][j - 1].val == player &&
-          board[i - 2][j - 2].val == player &&
-          board[i - 3][j - 3].val == player
+          board[i][j] == player &&
+          board[i - 1][j - 1] == player &&
+          board[i - 2][j - 2] == player &&
+          board[i - 3][j - 3] == player
         ) {
           return true;
         }
@@ -287,21 +306,23 @@ function init(player, OPPONENT) {
     }
   }
 
-  function isTie(gameData) {
+  function isTie(board) {
     let isBoardFill = true;
-    for (let i = 0; i < gameData.length; i++) {
-      isBoardFill = gameData[i] && isBoardFill;
+
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        if (!board[i][j]) return false;
+      }
     }
     if (isBoardFill) {
       return true;
     }
-    return false;
   }
 
-  // SHOW GAME OVER
+  //show game
   function showGameOver(player) {
     let message = player == "tie" ? "Oops No Winner" : "The Winner is";
-    let imgSrc = `img/${player}.png`;
+    let imgSrc = `img/${player}1.png`;
 
     gameOverElement.innerHTML = `
               <h1>${message}</h1>
