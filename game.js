@@ -172,11 +172,9 @@ function init(player, OPPONENT, LEVEL) {
     // // recursive break
     // if (level == 0) return [null, 0];
     // Call score of our board
-    var score = heuristicFn(board);
-    // console.log(score);
+    var score = scoreFn(board);
 
     if (isFinished(level, score, board)) return [null, score];
-
     // Column, Score
     var max = [null, -99999];
 
@@ -200,7 +198,7 @@ function init(player, OPPONENT, LEVEL) {
   }
   //user part
   function minimizePlay(board, level) {
-    var score = heuristicFn(board);
+    var score = scoreFn(board);
     // console.log(score);
 
     if (isFinished(level, score, board)) return [null, score];
@@ -318,7 +316,7 @@ function init(player, OPPONENT, LEVEL) {
     }
   }
 
-  function heuristicFn(board) {
+  function scoreFn(board) {
     var points = 0;
 
     var vertical_points = 0;
@@ -326,6 +324,7 @@ function init(player, OPPONENT, LEVEL) {
     var diagonal_points1 = 0;
     var diagonal_points2 = 0;
 
+    //vertical
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 7; j++) {
         var score = scorePosition(i, j, 1, 0, board);
@@ -334,6 +333,7 @@ function init(player, OPPONENT, LEVEL) {
         vertical_points += score;
       }
     }
+    // horizontal
     for (let i = 0; i < 7; i++) {
       for (let j = 0; j < 4; j++) {
         var score = scorePosition(i, j, 0, 1, board);
@@ -342,7 +342,7 @@ function init(player, OPPONENT, LEVEL) {
         horizontal_points += score;
       }
     }
-
+    //diagonal
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         var score = scorePosition(i, j, 1, 1, board);
@@ -351,7 +351,7 @@ function init(player, OPPONENT, LEVEL) {
         diagonal_points1 += score;
       }
     }
-
+    //diagonal
     for (let i = 3; i < 7; i++) {
       for (let j = 0; j < 4; j++) {
         var score = scorePosition(i, j, -1, +1, board);
@@ -361,7 +361,7 @@ function init(player, OPPONENT, LEVEL) {
       }
     }
     points =
-      horizontal_points + vertical_points + diagonal_points1 + diagonal_points2;
+      horizontal_points + vertical_points 
     return points;
   }
 
@@ -380,6 +380,8 @@ function init(player, OPPONENT, LEVEL) {
 
     // Determine score through amount of available chips
     for (var i = 0; i < 4; i++) {
+      // console.log(i);
+
       if (board[row][column] == player.man) {
         human_points++; // Add for each human chip
       } else if (board[row][column] == player.computer) {
@@ -390,6 +392,7 @@ function init(player, OPPONENT, LEVEL) {
       column += delta_x;
     }
 
+    // console.log(computer_points);
     // Marking winning/returning score
     if (human_points == 4) {
       return -100000;
