@@ -23,10 +23,10 @@ function init(player, OPPONENT, LEVEL) {
       for (let j = 0; j < COLUMN; j++) {
         board[i][j] = null;
         ctx.strokeStyle = "#000";
-        // ctx.setLineDash([5, 3]);
+        ctx.setLineDash([5, 3]);
         ctx.font = "15px Arial";
         ctx.strokeRect(i * SPACE_SIZE, j * SPACE_SIZE, SPACE_SIZE, SPACE_SIZE);
-        ctx.fillText(`[${i}, ${j}]`, i * SPACE_SIZE, j * SPACE_SIZE + 20);
+        // ctx.fillText(`[${i}, ${j}]`, i * SPACE_SIZE, j * SPACE_SIZE + 20);
       }
     }
   }
@@ -75,7 +75,7 @@ function init(player, OPPONENT, LEVEL) {
       let startTime = new Date().getTime();
       //minimax algorithm
       // console.log(LEVEL);
-      let aiMove = maximizePlay(board, LEVEL);
+      let aiMove = maximizePlay(board, LEVEL); 
       console.log(aiMove);
       let positions = getPosition(aiMove[0], board);
 
@@ -104,73 +104,9 @@ function init(player, OPPONENT, LEVEL) {
     }, 500);
   }
 
-  function minimaxPlay(board, level, PLAYER) {
-    // BASE
-    if (isWinner(board, player.computer))
-      return {
-        score: 10,
-      };
-    if (isWinner(board, player.man))
-      return {
-        score: -10,
-      };
-    if (isTie(board))
-      return {
-        score: 0,
-      };
-    // recursive break
-    if (level == 0)
-      return {
-        score: 0,
-      };
-    var moves = [];
-    for (let i = 0; i < 7; i++) {
-      let newBoard = JSON.parse(JSON.stringify(board));
-      let positions = getPosition(i, newBoard);
-      if (positions) {
-        newBoard[positions[0]][positions[1]] = PLAYER;
-        let move = {};
-        move.positions = positions;
-        if (PLAYER == player.computer) {
-          move.score = minimaxPlay(board, level - 1, player.man).score;
-        } else {
-          move.score = minimaxPlay(board, level - 1, player.computer).score;
-        }
-        moves.push(move);
-      }
-    }
-    // console.log(moves);
-    //MINIMAX ALGIRITHM
-    let bestMove;
-    if (PLAYER == player.computer) {
-      let bestEvaluation = -Infinity;
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].score > bestEvaluation) {
-          bestEvaluation = moves[i].score;
-          bestMove = moves[i];
-        }
-      }
-    } else {
-      let bestEvaluation = +Infinity;
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].score < bestEvaluation) {
-          bestEvaluation = moves[i].score;
-          bestMove = moves[i];
-        }
-      }
-    }
-
-    return bestMove;
-  }
-
   //ai part
   function maximizePlay(board, level) {
-    // // BASE
-    // if (isWinner(board, player.computer)) return [null, 10];
-    // if (isWinner(board, player.man)) return [null, -10];
-    // if (isTie(board)) return [null, 0];
-    // // recursive break
-    // if (level == 0) return [null, 0];
+    // BASE
     // Call score of our board
     var score = scoreFn(board);
 
@@ -360,8 +296,7 @@ function init(player, OPPONENT, LEVEL) {
         diagonal_points2 += score;
       }
     }
-    points =
-      horizontal_points + vertical_points 
+    points = horizontal_points + vertical_points;
     return points;
   }
 
